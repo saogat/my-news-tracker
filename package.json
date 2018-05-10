@@ -1,0 +1,37 @@
+{
+  "name": "my_news_tracker",
+  "version": "1.0.0",
+  "description": "Lets one save news from a news-site and save notes on particular news",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
+  },
+  "author": "Saogat Rab",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "body-parser": "^1.18.2",
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "mongojs": "^2.5.0",
+    "mongoose": "^5.0.17",
+    "morgan": "^1.9.0",
+    "request": "^2.85.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saogat/my-news-tracker.git"
+  },
+  "keywords": [
+    "news",
+    "notes"
+  ],
+  "bugs": {
+    "url": "https://github.com/saogat/my-news-tracker/issues"
+  },
+  "homepage": "https://github.com/saogat/my-news-tracker#readme"
+}
