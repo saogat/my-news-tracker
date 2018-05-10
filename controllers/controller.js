@@ -83,7 +83,7 @@ router.get("/articles/:id", function (req, res) {
             _id: req.params.id
         })
         // ..and populate all of the notes associated with it
-        .populate("note")
+        .populate("notes")
         .then(function (dbArticle) {
             // If we were able to successfully find an Article with the given id, send it back to the client
             res.json(dbArticle);
@@ -96,11 +96,11 @@ router.get("/articles/:id", function (req, res) {
 
 
 // Route for grabbing a specific Article by id, and saving it in SavedArticles
-router.post("/articles/note:id", function (req, res) {
+router.post("/articles/note/:id", function (req, res) {
     // Create a new Book in the database
     db.Note.create(req.body)
         .then(function (dbNote) {
-            // If a Book was created successfully, find one library (there's only one) and push the new Book's _id to the Library's `books` array
+            // If a note was created successfully, find one article and push the new Note's _id to the Library's `books` array
             // { new: true } tells the query that we want it to return the updated Library -- it returns the original by default
             // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
             return db.Article.findOneAndUpdate({

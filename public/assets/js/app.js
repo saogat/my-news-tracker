@@ -1,6 +1,6 @@
 $(function () {
   // Grab the articles as a json
-  $.getJSON("/articles", function (data) {
+  $.getJSON("/", function (data) {
     // For each one
     for (var i = 0; i < data.length; i++) {
       // Display the apropos information on the page
@@ -23,114 +23,113 @@ $(function () {
       });
   });
 
+
+  function renderNotesList(data) {
+    // This function handles rendering note list items to our notes modal
+    // Setting up an array of notes to render after finished
+    // Also setting up a currentNote variable to temporarily store each note
+    var notesToRender = [];
+    var currentNote;
+    if (!data.notes.length) {
+      // If we have no notes, just display a message explaing this
+      currentNote = ["<li class='list-group-item'>", "No notes for this article yet.", "</li>"].join("");
+      notesToRender.push(currentNote);
+    }
+    else {
+      // If we do have notes, go through each one
+      for (var i = 0; i < data.notes.length; i++) {
+        // Constructs an li element to contain our noteText and a delete button
+        currentNote = $(
+          [
+            "<li class='list-group-item note'>",
+            data.notes[i].noteText,
+            "<button class='btn btn-danger note-delete'>x</button>",
+            "</li>"
+          ].join("")
+        );
+        // Store the note id on the delete button for easy access when trying to delete
+        currentNote.children("button").data("_id", data.notes[i]._id);
+        // Adding our currentNote to the notesToRender array
+        notesToRender.push(currentNote);
+      }
+    }
+    // Now append the notesToRender to the note-container inside the note modal
+    $(".note-container").append(notesToRender);
+  }
+
+
+  function handleArticleNotes(id) {
+    // This function handles opending the notes modal and displaying our notes
+    // We grab the id of the article to get notes for from the panel element the delete button sits inside
+    
+    // Grab any notes with this headline/article id
+    $.get("/articles/" + id).then(function(data) {
+      // Constructing our initial HTML to add to the notes modal
+      console.log(data);
+      var modalText = [
+        "<div class='container-fluid text-center'>",
+        "<h4>Notes For Article: ",
+        id,
+        "</h4>",
+        "<hr />",
+        "<ul class='list-group note-container'>",
+        "</ul>",
+        "<textarea placeholder='New Note' rows='4' cols='60'></textarea>",
+        "<button class='btn btn-success save'>Save Note</button>",
+        "</div>"
+      ].join("");
+      // Adding the formatted HTML to the note modal
+      bootbox.dialog({
+        message: modalText,
+        closeButton: true
+      });
+      var noteData = {
+        _id: id,
+        notes: data || []
+      };
+      // Adding some information about the article and article notes to the save button for easy access
+      // When trying to add a new note
+      $(".btn.save").data("article", noteData);
+      // renderNotesList will populate the actual note HTML inside of the modal we just created/opened
+      renderNotesList(noteData);
+    });
+  }
+
+
   // Whenever someone clicks a save note button
   $(".note-button").on("click", function (event) {
-    console.log("saving note");
-    var thisId = $(this).attr("data-id");
-    var div1 = $("<div>");
-    div1.addClass("bootbox");
-    div1.addClass("modal");
-    div1.addClass("fade in");
-    div1.attr("tabIndex", "-1");
-    div1.attr("role", "dialog");
-    div1.attr("style", "display: block;");
-    $("#articles").append(div1);
-
-
-    var div2 = $("<div>");
-    div2.addClass("modal-dialog");
-    div2.addClass("modal-content");
-    div2.addClass("modal-body");
-    div1.append(div2);
-
-    var button = $("<button>");
-    button.attr("type", "button");
-    button.addClass("bootbox-close-button");
-    button.addClass("close");
-    button.attr("data-dismis", "modal");
-    button.attr("aria-hidden", "true");
-    button.attr("style", "margin-top: -10px;");
-    div2.append(button);
-
-    var div3 = $("<div>");
-    div3.addClass("bootbox-body");
-    div2.append(div3);
-
-    var div4 = $("<div>");
-    div4.addClass("container-fluid");
-    div4.addClass("container-fluid");
-    div3.append(div4);
-
-    var div5 = $("<div>");
-    div5.addClass("text-center");
-    div5.append($("<h4>").text("Notes For Article: " + thisId));
-
-    var ul = $("<ul>");
-    ul.addClass("list-group");
-    ul.addClass("note-container");
-    div5.append(ul);
-
-    var li = $("<li>");
-    li.addClass("list-group-item");
-    li.text("No notes for this article yet.");
-    ul.append(li);
-    div5.append(ul);
-
-    var textArea = $("<textarea>");
-    textArea.attr("placeholder", "New Note");
-    textArea.attr("rows", "4");
-    textArea.attr("cols", "60");
-
-    div5.append(textArea);
-
-    var button = $("<button>");
-    button.attr("type", "button");
-    button.addClass("btn");
-    button.addClass("btn-success");
-    button.addClass("save");
-    button.text("Save Note");
-    div5.append(button);
-
-    // <div class="modal-backdrop fade in"></div>
-
-    // Now make an ajax call for the Article
-    // $.ajax({
-    //     method: "POST",
-    //     url: "/articles/note/" + thisId
-    //   })
-    //   .then(function (data) {
-    //     console.log(data);
-    //   });
+    handleArticleNotes($(this).attr("data-id"));
   });
 
 
 
   // When you click the savenote button
-  $(document).on("click", "#savenote", function () {
+  $(document).on("click", ".btn.save", function () {
     // Grab the id associated with the article from the submit button
-    var thisId = $(this).attr("data-id");
-
-    // Run a POST request to change the note, using what's entered in the inputs
-    $.ajax({
+    var noteData = $(this).data("article");
+    var thisId = noteData._id;
+    var newNote = $(".bootbox-body textarea").val().trim();
+    // If we actually have data typed into the note input field, format it
+    // and post it to the "/api/notes" route and send the formatted noteData as well
+    if (newNote) {
+      noteData = {
+        _id: $(this).data("article")._id,
+        noteText: newNote
+      };     
+      $.ajax({
         method: "POST",
-        url: "/articles/" + thisId,
-        data: {
-          // Value taken from title input
-          title: $("#titleinput").val(),
-          // Value taken from note textarea
-          body: $("#bodyinput").val()
-        }
+        url: "/articles/note/" + thisId,
+        data: newNote
       })
       // With that done
       .then(function (data) {
         // Log the response
         console.log(data);
-        // Empty the notes section
+        // When complete, close the modal
+        bootbox.hideAll();
+         // Empty the notes section
         $("#notes").empty();
       });
-
-    // Also, remove the values entered in the input and textarea for note entry
-    $("#titleinput").val("");
-    $("#bodyinput").val("");
+    }
   });
 })

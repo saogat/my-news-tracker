@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "body-parser": "^1.18.2",
+    "bootbox": "^4.4.0",
     "cheerio": "^1.0.0-rc.2",
     "express": "^4.16.3",
     "express-handlebars": "^3.0.0",
