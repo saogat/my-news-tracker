@@ -64,14 +64,15 @@ router.get("/saved", function (req, res) {
         // Specify that we want to populate the retrieved SavedArticle with any associated articles
         .populate("articles")
         .then(function (dbSavedArticle) {
-            console.log(dbSavedArticle);
+            console.log("dbSavedArticle");
             // If any SavedArticle are found, send them to the client with any associated articles
             // res.json(dbSavedArticle);
             var hbsObject = {
                 articles: dbSavedArticle.articles
             };
-            console.log(hbsObject);
-            res.render("saved", hbsObject);
+            if(hbsObject)
+                {res.render("saved", hbsObject)}
+            else{res.render("saved", {articles: []})}
         })
         .catch(function (err) {
             // If an error occurs, send it back to the client
