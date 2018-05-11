@@ -44,7 +44,7 @@ $(function () {
           ].join("")
         );
         // Store the note id on button
-        currentNote.children("button").data("_id", note._id);
+        currentNote.children("button").data("note-id", note._id);
         // Add currentNote to the notesToDisplay array
         notesToDisplay.push(currentNote);
       })
@@ -87,21 +87,37 @@ $(function () {
     handleArticleNotes($(this).attr("data-id"));
   });
 
-  //savenote button
-  $(document).on("click", ".btn.save", function () {
-    // Grab the id associated with the article from the submit button
-    var article = $(this).data("article");
-    var thisId = article._id;
-    var newNote = {body: $(".bootbox-body textarea").val().trim()};
-    console.log(newNote);
-    if (newNote) {  
+  //delete note button
+  $(document).on("click", ".note-delete", function () {
+    // Grab the id associated with the note from the x button
+    var noteId = $(this).data("note-id");
+    console.log("NoteId: ")
+    console.log(noteId);
+    if (noteId) {  
       $.ajax({
         method: "POST",
-        url: "/articles/note/" + thisId,
-        data: newNote
+        url: "/articles/note/clear/" + noteId
       }).then(function () {
         bootbox.hideAll();
       });
     }
   });
 })
+
+//savenote button
+$(document).on("click", ".btn.save", function () {
+  // Grab the id associated with the article from the submit button
+  var article = $(this).data("article");
+  var thisId = article._id;
+  var newNote = {body: $(".bootbox-body textarea").val().trim()};
+  console.log(newNote);
+  if (newNote) {  
+    $.ajax({
+      method: "POST",
+      url: "/articles/note/" + thisId,
+      data: newNote
+    }).then(function () {
+      bootbox.hideAll();
+    });
+  }
+});

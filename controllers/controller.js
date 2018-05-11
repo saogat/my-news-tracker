@@ -19,9 +19,7 @@ router.get("/", function (req, res) {
 
 // A GET route for scraping the echoJS website
 router.get("/scrape", function (req, res) {
-    // First, we grab the body of the html with request
     axios.get("https://www.nytimes.com").then(function (response) {
-        // Then, we load that into cheerio and save it to $ for a shorthand selector
         var $ = cheerio.load(response.data);
 
         // Now, we grab every h2 within an article tag, and do the following:
@@ -93,28 +91,6 @@ router.get("/articles/:id", function (req, res) {
         });
 });
 
-
-// router.post("/articles/note/:id", function (req, res) {
-//     db.Note.create(req.body)
-//         .then(function (dbNote) {
-//             return db.Article.findOneAndUpdate(
-//                 {
-//                      _id: req.params.id
-//                 }, 
-//                 {$push: {
-//                         notes: req.params.id
-//                     }}, {
-//             new: true
-//         })
-//         .then(function (dbArticle) {
-//             res.json(dbArticle);
-//         })
-//         .catch(function (err) {
-//             res.json(err);
-//         });
-// });
-
-
 router.post("/articles/note/:id", function (req, res) {
     console.log("post");
     console.log(req.body);
@@ -133,22 +109,6 @@ router.post("/articles/note/:id", function (req, res) {
         res.json(err);
       });
   });
-
-
-// app.post("/articles/note/:id", function (req, res) {
-//     db.Note.create(req.body)
-//       .then(function(dbNote) {
-//         return db.Article.findOneAndUpdate({
-//           _id: req.params.id
-//       }, { note: dbNote._id }, { new: true });
-//       })
-//       .then(function(dbArticle) {
-//         res.json(dbArticle);
-//       })
-//       .catch(function(err) {
-//         res.json(err);
-//       });
-//   });
 
 // POST route for saving a article
 router.post("/articles/save/:id", function (req, res) {
@@ -169,6 +129,23 @@ router.post("/articles/save/:id", function (req, res) {
         });
 });
 
+// delete note
+router.post("/articles/note/clear/:id", function(req, res) {
+  // Remove every note from the notes collection
+  db.Note.remove({ _id: req.params.id}, function(error, response) {
+    // Log any errors to the console
+    if (error) {
+      console.log(error);
+      res.send(error);
+    }
+    else {
+      // Otherwise, send the mongojs response to the browser
+      // This will fire off the success function of the ajax request
+      console.log(response);
+      res.send(response);
+    }
+  });
+});
 
 // Export routes for server.js to use.
 module.exports = router;
