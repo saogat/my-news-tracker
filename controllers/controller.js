@@ -48,7 +48,6 @@ router.get("/scrape", function (req, res) {
                     return res.json(err);
                 });
         });
-
         // If we were able to successfully scrape and save an Article, send a message to the client
         res.redirect(307, "/");
     });
@@ -95,31 +94,61 @@ router.get("/articles/:id", function (req, res) {
 });
 
 
-// Route for grabbing a specific Article by id, and saving it in SavedArticles
+// router.post("/articles/note/:id", function (req, res) {
+//     db.Note.create(req.body)
+//         .then(function (dbNote) {
+//             return db.Article.findOneAndUpdate(
+//                 {
+//                      _id: req.params.id
+//                 }, 
+//                 {$push: {
+//                         notes: req.params.id
+//                     }}, {
+//             new: true
+//         })
+//         .then(function (dbArticle) {
+//             res.json(dbArticle);
+//         })
+//         .catch(function (err) {
+//             res.json(err);
+//         });
+// });
+
+
 router.post("/articles/note/:id", function (req, res) {
-    // Create a new Book in the database
+    console.log("post");
+    console.log(req.body);
     db.Note.create(req.body)
-        .then(function (dbNote) {
-            // If a note was created successfully, find one article and push the new Note's _id to the Library's `books` array
-            // { new: true } tells the query that we want it to return the updated Library -- it returns the original by default
-            // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-            return db.Article.findOneAndUpdate({
-                _id: req.params.id
-            }, {
-                note: dbNote._id
-            }, {
-                new: true
-            });
-        })
-        .then(function (dbArticle) {
-            // If the Library was updated successfully, send it back to the client
-            res.json(dbArticle);
-        })
-        .catch(function (err) {
-            // If an error occurs, send it back to the client
-            res.json(err);
-        });
-});
+      .then(function(dbNote) {
+        return db.Article.findOneAndUpdate({
+          _id: req.params.id
+      }, {$push: {
+                 notes: dbNote._id
+                }}, { new: true });
+      })
+      .then(function(dbArticle) {
+        res.json(dbArticle);
+      })
+      .catch(function(err) {
+        res.json(err);
+      });
+  });
+
+
+// app.post("/articles/note/:id", function (req, res) {
+//     db.Note.create(req.body)
+//       .then(function(dbNote) {
+//         return db.Article.findOneAndUpdate({
+//           _id: req.params.id
+//       }, { note: dbNote._id }, { new: true });
+//       })
+//       .then(function(dbArticle) {
+//         res.json(dbArticle);
+//       })
+//       .catch(function(err) {
+//         res.json(err);
+//       });
+//   });
 
 // POST route for saving a article
 router.post("/articles/save/:id", function (req, res) {
